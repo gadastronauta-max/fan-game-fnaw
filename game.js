@@ -241,6 +241,15 @@ function resetGameState() {
         clearTimeout(GameState.redAttackTimer);
         GameState.redAttackTimer = null;
     }
+    // Limpa timers do animatrônico azul
+    if (GameState.doorAtDoorTimer) {
+        clearTimeout(GameState.doorAtDoorTimer);
+        GameState.doorAtDoorTimer = null;
+    }
+    if (GameState.animatronicCooldownTimer) {
+        clearTimeout(GameState.animatronicCooldownTimer);
+        GameState.animatronicCooldownTimer = null;
+    }
 
     GameState.energy = 100;
     GameState.isGameOver = false;
@@ -253,6 +262,7 @@ function resetGameState() {
     GameState.isRecharging = false;
     GameState.doorAttackSide = null;
     GameState.redAnimatronicAtDoor = false;
+    GameState.animatronicBlocked = false;
 
     document.querySelectorAll('.control-btn').forEach(btn => {
         btn.disabled = false;
@@ -307,6 +317,14 @@ function goToMenu() {
         clearTimeout(GameState.redAttackTimer);
         GameState.redAttackTimer = null;
     }
+    if (GameState.doorAtDoorTimer) {
+        clearTimeout(GameState.doorAtDoorTimer);
+        GameState.doorAtDoorTimer = null;
+    }
+    if (GameState.animatronicCooldownTimer) {
+        clearTimeout(GameState.animatronicCooldownTimer);
+        GameState.animatronicCooldownTimer = null;
+    }
 
     elements.gameOverScreen.style.display = 'none';
     elements.gameOverAnimatronic.style.display = 'none';
@@ -323,6 +341,7 @@ function goToMenu() {
     GameState.isRecharging = false;
     GameState.doorAttackSide = null;
     GameState.redAnimatronicAtDoor = false;
+    GameState.animatronicBlocked = false;
 
     menuElements.storyScreen._lastTap = 0;
     storyTapEnabled = false;
@@ -349,8 +368,12 @@ const GameState = {
     doorAttackSide: null,
     isRecharging: false,
     rechargeTimer: null,
+    // Animatrônico azul — controle de tempo na porta
+    doorAtDoorTimer: null,         // timer de 10s máximo na porta
+    animatronicBlocked: false,     // true durante cooldown após recuar
+    animatronicCooldownTimer: null,
     // Estado exclusivo do animatrônico vermelho
-    redAnimatronicAtDoor: false,  // true quando está visível na porta direita
+    redAnimatronicAtDoor: false,   // true quando está visível na porta direita
     redAttackTimer: null           // timer de 1s antes do game over
 };
 
@@ -490,8 +513,37 @@ function startDoorAttackTimer(side) {
     }, 2500);
 }
 
+// Recua o animatrônico azul para a câmera 1 e impede movimento por um tempo
+function retreatAnimatronic() {
+    if (GameState.isGameOver) return;
+
+    // Limpa timer de porta se houver
+    if (GameState.doorAttackTimer) {
+        clearTimeout(GameState.doorAttackTimer);
+        GameState.doorAttackTimer = null;
+        GameState.doorAttackSide = null;
+    }
+    if (GameState.doorAtDoorTimer) {
+        clearTimeout(GameState.doorAtDoorTimer);
+        GameState.doorAtDoorTimer = null;
+    }
+
+    GameState.animatronicPosition = 1;
+    GameState.animatronicBlocked = true;
+    updateAnimatronicPosition();
+    updateCameraButtons();
+
+    // Libera o movimento de novo após 20–35s
+    const cooldown = 20000 + Math.random() * 15000;
+    GameState.animatronicCooldownTimer = setTimeout(() => {
+        GameState.animatronicBlocked = false;
+        GameState.animatronicCooldownTimer = null;
+    }, cooldown);
+}
+
 function moveAnimatronic() {
     if (GameState.isGameOver) return;
+    if (GameState.animatronicBlocked) return;
 
     const moveChance = 0.55 + (GameState.difficulty * 0.10);
 
@@ -502,6 +554,16 @@ function moveAnimatronic() {
 
             if (doorOpen) {
                 startDoorAttackTimer(doorSide);
+            }
+
+            // Inicia o timer de 10s para ele sair da porta caso não entre
+            if (!GameState.doorAtDoorTimer) {
+                GameState.doorAtDoorTimer = setTimeout(() => {
+                    GameState.doorAtDoorTimer = null;
+                    if (!GameState.isGameOver && !GameState.animatronicBlocked) {
+                        retreatAnimatronic();
+                    }
+                }, 10000);
             }
             return;
         }
@@ -522,6 +584,16 @@ function moveAnimatronic() {
                     startDoorAttackTimer('left');
                 } else if (GameState.animatronicPosition === 7 && GameState.rightDoorOpen) {
                     startDoorAttackTimer('right');
+                }
+
+                // Se chegou a uma porta, inicia o contador de 10s
+                if ((GameState.animatronicPosition === 6 || GameState.animatronicPosition === 7) && !GameState.doorAtDoorTimer) {
+                    GameState.doorAtDoorTimer = setTimeout(() => {
+                        GameState.doorAtDoorTimer = null;
+                        if (!GameState.isGameOver && !GameState.animatronicBlocked) {
+                            retreatAnimatronic();
+                        }
+                    }, 10000);
                 }
             }
         }
@@ -743,6 +815,14 @@ function energyGameOver() {
         clearTimeout(GameState.redAttackTimer);
         GameState.redAttackTimer = null;
     }
+    if (GameState.doorAtDoorTimer) {
+        clearTimeout(GameState.doorAtDoorTimer);
+        GameState.doorAtDoorTimer = null;
+    }
+    if (GameState.animatronicCooldownTimer) {
+        clearTimeout(GameState.animatronicCooldownTimer);
+        GameState.animatronicCooldownTimer = null;
+    }
 
     document.querySelectorAll('.control-btn').forEach(btn => {
         btn.disabled = true;
@@ -781,6 +861,14 @@ function gameOver(image) {
         clearTimeout(GameState.redAttackTimer);
         GameState.redAttackTimer = null;
     }
+    if (GameState.doorAtDoorTimer) {
+        clearTimeout(GameState.doorAtDoorTimer);
+        GameState.doorAtDoorTimer = null;
+    }
+    if (GameState.animatronicCooldownTimer) {
+        clearTimeout(GameState.animatronicCooldownTimer);
+        GameState.animatronicCooldownTimer = null;
+    }
 
     document.querySelectorAll('.control-btn').forEach(btn => {
         btn.disabled = true;
@@ -797,24 +885,23 @@ function gameOver(image) {
 }
 
 // ==================== ANIMATRÔNICO VERMELHO ====================
-// Aparece APENAS na porta direita. Após 1s com a porta aberta → game over.
+// Aparece raramente (45–90s), APENAS na porta direita.
+// Ao aparecer, dispara imediatamente 1s de countdown para game over.
+// Fechar a porta direita ANTES do 1s acabar cancela o ataque.
 
 function spawnRedAnimatronic() {
     if (GameState.isGameOver) return;
-    if (GameState.redAnimatronicAtDoor) return; // já está lá
+    if (GameState.redAnimatronicAtDoor) return;
 
     GameState.redAnimatronicAtDoor = true;
     updateRedAnimatronicVisibility();
 
-    // Se a porta já estiver aberta quando ele aparecer, inicia o timer
-    if (GameState.rightDoorOpen) {
-        startRedAttackTimer();
-    }
+    // Inicia o ataque imediatamente — porta aberta ou fechada
+    startRedAttackTimer();
 }
 
 function updateRedAnimatronicVisibility() {
     if (GameState.redAnimatronicAtDoor) {
-        // Mostra o animatrônico vermelho na porta direita (independente de estar aberta ou fechada)
         elements.animatronicRedDoor.style.display = 'block';
         elements.animatronicRedDoor.style.backgroundImage = `url("${ANIMATRONIC_RED_IMAGE}")`;
         elements.animatronicRedDoor.style.right = '2%';
@@ -826,21 +913,19 @@ function updateRedAnimatronicVisibility() {
 }
 
 function startRedAttackTimer() {
-    // Evita criar múltiplos timers
     if (GameState.redAttackTimer) return;
-    if (!GameState.redAnimatronicAtDoor) return;
-    if (!GameState.rightDoorOpen) return;
 
+    // 1s para o jogador fechar a porta — se não fechar, game over
     GameState.redAttackTimer = setTimeout(() => {
         GameState.redAttackTimer = null;
-        if (!GameState.isGameOver && GameState.redAnimatronicAtDoor && GameState.rightDoorOpen) {
+        if (!GameState.isGameOver && GameState.redAnimatronicAtDoor) {
             jumpscare(ANIMATRONIC_RED_IMAGE);
         }
     }, 1000);
 }
 
 function dismissRedAnimatronic() {
-    // Chamado quando a porta direita é fechada com o animatrônico vermelho lá
+    // Jogador fechou a porta a tempo
     GameState.redAnimatronicAtDoor = false;
     updateRedAnimatronicVisibility();
 
@@ -853,29 +938,25 @@ function dismissRedAnimatronic() {
 function scheduleRedAnimatronic() {
     if (GameState.isGameOver) return;
 
-    // Aparece a cada 15–30s em um momento aleatório
-    const delay = 15000 + Math.random() * 15000;
+    // Intervalo longo: 45–90 segundos entre aparições
+    const delay = 45000 + Math.random() * 45000;
 
     setTimeout(() => {
         if (GameState.isGameOver) return;
 
         spawnRedAnimatronic();
 
-        // Fica visível por 8s; se a porta direita for fechada antes do game over, ele vai embora
+        // Agenda a próxima aparição após esta ser resolvida (game over ou dismiss)
+        // O scheduleRedAnimatronic recursivo só roda se o jogador sobreviveu
         setTimeout(() => {
-            if (GameState.isGameOver) return;
-
-            // Se a porta direita ainda estiver fechada (player sobreviveu), remove e agenda de novo
-            if (!GameState.rightDoorOpen) {
-                dismissRedAnimatronic();
-            }
-            // Se estiver aberta o timer de ataque já vai disparar o game over
-
-            // Agenda próxima aparição somente se ainda estiver vivo
             if (!GameState.isGameOver) {
+                // Remove o vermelho se ainda estiver lá (não deveria, mas por segurança)
+                if (GameState.redAnimatronicAtDoor) {
+                    dismissRedAnimatronic();
+                }
                 scheduleRedAnimatronic();
             }
-        }, 8000);
+        }, 3000);
     }, delay);
 }
 
@@ -944,7 +1025,7 @@ window.addEventListener('load', () => {
     elements.rightDoorBtn.addEventListener('click', () => {
         const wasOpen = GameState.rightDoorOpen;
         toggleRightDoor();
-        // Se fechou a porta enquanto o vermelho estava lá → dismissar
+        // Se fechou a porta enquanto o vermelho estava lá → cancela o ataque
         if (wasOpen && !GameState.rightDoorOpen && GameState.redAnimatronicAtDoor) {
             dismissRedAnimatronic();
         }
