@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fan game: Five nights at Woppy</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Tela Preta (1 segundo) -->
+    <div id="black-screen"></div>
+
+    <!-- ==================== MENU INICIAL ==================== -->
+    <div id="main-menu">
+        <!-- TÍTULO NO TOPO -->
+        <div class="menu-header">
+            <div class="menu-title">Fan game: Five nights at Woppy</div>
+        </div>
+
+        <!-- CORPO DO MENU (2 COLUNAS) -->
+        <div class="menu-body">
+            <!-- COLUNA ESQUERDA: BOTÃO + TUTORIAL + SOBRE FNAF -->
+            <div class="menu-left">
+                <button class="play-btn" id="play-btn">JOGAR</button>
+
+                <!-- TUTORIAL -->
+                <div class="menu-section">
+                    <h3>📖 Tutorial - Como Jogar</h3>
+                    <p><strong>Objetivo:</strong> Sobreviva das 6:00 AM até as 9:00 AM sem ser pego pelo Woppy.</p>
+                    <ul>
+                        <li><strong>PORTAS:</strong> Feche as portas esquerda e direita para bloquear o animatrônico quando ele estiver na sua porta.</li>
+                        <li><strong>MONITOR:</strong> Abra o monitor para ver as câmeras de segurança e localizar o Woppy.</li>
+                        <li><strong>CÂMERAS:</strong> Use os botões CAM 1 a CAM 5 para trocar entre as câmeras.</li>
+                        <li><strong>ENERGIA:</strong> A energia diminui com o tempo. Portas abertas e monitor ativo gastam mais energia.</li>
+                        <li><strong>RECARREGAR:</strong> Clique no botão RECARREGAR para recuperar energia (leva 2 segundos).</li>
+                        <li><strong>CUIDADO:</strong> Se a energia acabar, você perde. Se o animatrônico entrar enquanto a porta estiver aberta, é GAME OVER.</li>
+                        <li><strong>ANIMATRÔNICO VERMELHO:</strong> Aparece apenas na porta direita. Feche a porta direita imediatamente — você tem apenas 1 segundo!</li>
+                    </ul>
+                </div>
+
+                <!-- O QUE É FNAF -->
+                <div class="menu-section">
+                    <h3>🎮 O que é FNAF?</h3>
+                    <p><strong>Five Nights at Freddy's (FNAF)</strong> é uma série de jogos de terror e sobrevivência criada por Scott Cawthon.</p>
+                    <p>No jogo original, você é um vigia noturno em uma pizzaria chamada Freddy Fazbear's Pizza. Durante a noite, os animatrônicos ganham vida e tentam te capturar.</p>
+                    <p>Você precisa monitorar as câmeras de segurança, fechar portas e gerenciar a energia limitada para sobreviver até as 6:00 AM.</p>
+                    <p><strong>FNAF</strong> ficou famoso por seu clima de tensão, jumpscares e pela história misteriosa por trás dos animatrônicos.</p>
+                </div>
+            </div>
+
+            <!-- COLUNA DIREITA: IMAGEM DO ANIMATRONIC -->
+            <div class="menu-right">
+                <div class="menu-animatronic-image" id="menu-animatronic"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tela de História -->
+    <div id="story-screen">
+        <div class="story-text-container">
+            <div class="story-text">
+                <h2>Freddy Fazbear's Pizza - 1993</h2>
+                <p>Há algo profundamente errado neste lugar...</p>
+                <p>Em 1987, cinco crianças desapareceram durante uma festa de aniversário aqui na Freddy Fazbear's Pizza. Os relatórios policiais nunca foram totalmente divulgados ao público, mas os rumores são perturbadores.</p>
+                <p>Os detetives encontraram evidências de atividade paranormal: gravações de segurança mostrando os animatrônicos se movendo sozinhos à noite, relatos de funcionários sobre vozes de crianças vindo dos bastidores, e manchas inexplicáveis que aparecem nas máscaras dos personagens todas as manhãs.</p>
+                <p>A pizzaria está prestes a fechar devido à má publicidade, mas o proprietário contratou você para ficar de guarda durante as últimas semanas de operação. Sua tarefa é simples: monitorar as câmeras de segurança e garantir que nada de "estranho" aconteça durante a noite.</p>
+                <p>Mas os rumores persistem... Dizem que as almas das crianças ainda estão aqui, presas dentro dos trajes dos animatrônicos. E quando a noite cai, eles se tornam algo mais do que apenas máquinas de entretenimento.</p>
+                <p>Você está pronto para enfrentar a noite?</p>
+            </div>
+        </div>
+        <div class="story-image-container">
+            <div class="story-image" id="story-animatronic"></div>
+            <div class="story-instruction">TOQUE DUAS VEZES NA TELA PARA COMEÇAR...</div>
+        </div>
+    </div>
+
+    <!-- Efeito VHS -->
+    <div id="vhs-overlay">
+        <div class="scanline"></div>
+        <div class="vhs-static"></div>
+    </div>
+
+    <!-- Botão Fullscreen -->
+    <button id="fullscreen-btn">TELA CHEIA</button>
+
+    <!-- Game Container -->
+    <div id="game-container">
+        <!-- Game Screen -->
+        <div id="game-screen">
+            <!-- Office View -->
+            <div id="office-view">
+                <div id="left-door" class="door"></div>
+                <div id="right-door" class="door"></div>
+                <div id="desk"></div>
+
+                <!-- MENSAGEM ACIMA DO MONITOR -->
+                <div id="message">
+                    Olha, eu te contratei para trabalhar nessa pizzaria, tem relatos de crianças desaparecidas aqui, então vai trabalhar
+                </div>
+
+                <!-- MONITOR QUADRADO -->
+                <div id="monitor">
+                    <div id="monitor-screen">
+                        <div id="monitor-text">SISTEMA OFFLINE<br>PRESSIONE MONITOR</div>
+                        <div id="camera-feed">
+                            <div id="camera-animatronic"></div>
+                            <div class="camera-static"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CAIXA DE ENERGIA EMBAIXO DO MONITOR -->
+                <div id="energy-box">
+                    <div id="energy-box-bar-container">
+                        <div id="energy-box-bar"></div>
+                        <div id="energy-box-warning"></div>
+                    </div>
+                    <button id="recharge-btn">RECARREGAR</button>
+                </div>
+
+                <!-- Animatrônico azul nas portas (esquerda ou direita) -->
+                <div id="animatronic-door"></div>
+
+                <!-- Animatrônico vermelho — exclusivo da porta direita -->
+                <div id="animatronic-red-door"></div>
+            </div>
+        </div>
+
+        <!-- Door Indicators -->
+        <div id="left-door-indicator" class="door-indicator">PORTA ESQ<br>FECHADA</div>
+        <div id="right-door-indicator" class="door-indicator">PORTA DIR<br>FECHADA</div>
+
+        <!-- Time Display -->
+        <div id="time-display">06:00 AM</div>
+
+        <!-- Camera Panel -->
+        <div id="camera-panel">
+            <div class="camera-btn" data-camera="1">CAM 1</div>
+            <div class="camera-btn" data-camera="2">CAM 2</div>
+            <div class="camera-btn" data-camera="3">CAM 3</div>
+            <div class="camera-btn" data-camera="4">CAM 4</div>
+            <div class="camera-btn" data-camera="5">CAM 5</div>
+        </div>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div id="controls">
+                <button id="left-door-btn" class="control-btn">PORTA ESQ</button>
+                <button id="right-door-btn" class="control-btn">PORTA DIR</button>
+                <button id="monitor-btn" class="control-btn">MONITOR</button>
+            </div>
+        </div>
+
+        <!-- Game Over -->
+        <div id="game-over">
+            <div id="game-over-animatronic"></div>
+            <div id="game-over-text">GAME OVER</div>
+            <button id="restart-btn">VOLTAR AO MENU</button>
+        </div>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>
